@@ -241,7 +241,7 @@ The original Node.js CLI version is still available:
 ./jarvis
 ```
 
-See original [README documentation](README-ORIGINAL.md) for CLI features.
+See the [CLI section in README.md](README.md#cli-application-original) for CLI features.
 
 ## 🤝 Contributing
 
