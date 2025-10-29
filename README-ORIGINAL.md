@@ -79,8 +79,6 @@ cp .env.example .env
 ## 📚 Documentation
 
 ### User Documentation
-- [README-WEB.md](README-WEB.md) - **🌐 Web application guide (NEW)**
-- [DEPLOYMENT.md](DEPLOYMENT.md) - Deployment instructions
 - [README-VOICE.md](README-VOICE.md) - Voice assistant guide
 - [QUICK-START.md](QUICK-START.md) - Quick start guide
 - [VOICE-COPILOT.md](VOICE-COPILOT.md) - GitHub Copilot integration
@@ -109,7 +107,7 @@ This codebase has been audited and contains:
 3. **Add Cleanup Handlers** (15 min) - Prevent resource leaks
 4. **Start Memory Monitoring** (20 min) - Detect issues early
 
-## 🛠️ CLI Installation
+## 🛠️ Installation
 
 ### System Requirements
 - Node.js >= 16.0.0
