@@ -9,12 +9,19 @@ export function cn(...inputs: ClassValue[]) {
  * Sanitize user input to prevent XSS attacks
  */
 export function sanitizeInput(input: string): string {
-  return input
-    .replace(/[<>]/g, '') // Remove < and >
+  // Remove dangerous URL schemes (more comprehensive)
+  let sanitized = input
     .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, '') // Remove event handlers
-    .trim()
-    .slice(0, 10000); // Limit length
+    .replace(/data:/gi, '')       // Remove data: protocol
+    .replace(/vbscript:/gi, '')   // Remove vbscript: protocol
+    .replace(/[<>]/g, '');        // Remove < and >
+  
+  // Remove event handlers more thoroughly (repeat to handle nested patterns)
+  for (let i = 0; i < 3; i++) {
+    sanitized = sanitized.replace(/\s*on\w+\s*=/gi, '');
+  }
+  
+  return sanitized.trim().slice(0, 10000); // Limit length
 }
 
 /**
