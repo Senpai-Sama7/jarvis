@@ -1,0 +1,291 @@
+#!/usr/bin/env node
+
+/**
+ * Voice Core Module
+ * Shared functionality for all voice interfaces
+ */
+
+const { spawn, exec } = require('child_process');
+const { promisify } = require('util');
+const execAsync = promisify(exec);
+const fs = require('fs');
+const https = require('https');
+const FormData = require('form-data');
+require('dotenv').config();
+
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+const WHISPER_MODEL = process.env.WHISPER_MODEL || 'whisper-large-v3';
+const SILENCE_DURATION = process.env.SILENCE_DURATION || '2';
+const SILENCE_THRESHOLD = process.env.SILENCE_THRESHOLD || '5%';
+
+// ============================================================================
+// DEPENDENCY CHECKING
+// ============================================================================
+
+async function checkDependencies() {
+  const deps = {
+    required: ['arecord', 'curl'],
+    optional: ['sox', 'festival', 'espeak-ng', 'xclip']
+  };
+  
+  const results = { missing: [], optional: [] };
+  
+  for (const cmd of deps.required) {
+    try {
+      await execAsync(`which ${cmd}`);
+    } catch {
+      results.missing.push(cmd);
+    }
+  }
+  
+  for (const cmd of deps.optional) {
+    try {
+      await execAsync(`which ${cmd}`);
+    } catch {
+      results.optional.push(cmd);
+    }
+  }
+  
+  return results;
+}
+
+async function checkAndFixAudio() {
+  console.log('🔍 Checking audio system...');
+  
+  if (!GROQ_API_KEY) {
+    console.error('❌ GROQ_API_KEY not found in .env file');
+    return false;
+  }
+  
+  const deps = await checkDependencies();
+  
+  if (deps.missing.length > 0) {
+    console.error(`❌ Missing required: ${deps.missing.join(', ')}`);
+    console.log('Install: sudo apt install alsa-utils curl');
+    return false;
+  }
+  
+  try {
+    const { stdout } = await execAsync('arecord -l');
+    if (stdout.includes('card')) {
+      console.log('✓ Microphone detected');
+      return true;
+    }
+  } catch {
+    console.error('❌ No microphone detected');
+    return false;
+  }
+  
+  return true;
+}
+
+// ============================================================================
+// AUDIO RECORDING
+// ============================================================================
+
+async function recordAudio(outputFile, options = {}) {
+  const useSilenceDetection = options.silenceDetection !== false;
+  
+  return new Promise((resolve, reject) => {
+    console.log('🎤 Listening...');
+    
+    let recordingProcess;
+    
+    if (useSilenceDetection) {
+      recordingProcess = spawn('sox', [
+        '-d', '-t', 'wav', outputFile,
+        'silence', '1', '0.1', '1%',
+        'silence', '1', SILENCE_DURATION, SILENCE_THRESHOLD
+      ], { stdio: ['ignore', 'pipe', 'pipe'] });
+      
+      recordingProcess.on('error', (err) => {
+        if (err.code === 'ENOENT') {
+          console.log('⚠️  sox not found, using manual mode');
+          recordingProcess = spawn('arecord', ['-f', 'cd', '-t', 'wav', outputFile]);
+          recordingProcess.on('close', () => resolve());
+          recordingProcess.on('error', reject);
+        } else {
+          reject(err);
+        }
+      });
+      
+      recordingProcess.on('close', () => {
+        console.log('✓ Silence detected');
+        resolve();
+      });
+    } else {
+      recordingProcess = spawn('arecord', ['-f', 'cd', '-t', 'wav', outputFile]);
+      recordingProcess.on('close', () => resolve());
+      recordingProcess.on('error', reject);
+    }
+  });
+}
+
+// ============================================================================
+// TRANSCRIPTION
+// ============================================================================
+
+async function transcribe(audioFile) {
+  return new Promise((resolve, reject) => {
+    const form = new FormData();
+    form.append('file', fs.createReadStream(audioFile));
+    form.append('model', WHISPER_MODEL);
+    form.append('response_format', 'text');
+    form.append('language', 'en');
+    
+    const req = https.request({
+      hostname: 'api.groq.com',
+      port: 443,
+      path: '/openai/v1/audio/transcriptions',
+      method: 'POST',
+      headers: {
+        ...form.getHeaders(),
+        'Authorization': `Bearer ${GROQ_API_KEY}`
+      }
+    }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 400) {
+          try {
+            const errorResponse = JSON.parse(data);
+            reject(new Error(`Transcription API Error (${res.statusCode}): ${errorResponse.error?.message || 'Unknown error'}`));
+          } catch {
+            reject(new Error(`Transcription API Error (${res.statusCode}): ${data || 'Unknown error'}`));
+          }
+        } else {
+          resolve(data.trim());
+        }
+      });
+    });
+    
+    req.on('error', reject);
+    form.pipe(req);
+  });
+}
+
+// ============================================================================
+// CHAT COMPLETION
+// ============================================================================
+
+async function getChatResponse(userMessage, conversationHistory = []) {
+  return new Promise((resolve, reject) => {
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are a helpful AI coding assistant. Provide concise, accurate responses. Keep responses under 100 words unless code is needed.'
+      },
+      ...conversationHistory,
+      { role: 'user', content: userMessage }
+    ];
+    
+    const payload = JSON.stringify({
+      model: GROQ_MODEL,
+      messages,
+      temperature: 0.7,
+      max_tokens: 1024
+    });
+    
+    const req = https.request({
+      hostname: 'api.groq.com',
+      port: 443,
+      path: '/openai/v1/chat/completions',
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const response = JSON.parse(data);
+          
+          // Check if the response contains an error
+          if (response.error) {
+            reject(new Error(`API Error: ${response.error.message || 'Unknown error'}`));
+            return;
+          }
+          
+          // Check if choices array exists and has content
+          if (!response.choices || !response.choices[0] || !response.choices[0].message || !response.choices[0].message.content) {
+            reject(new Error(`Invalid response format: ${JSON.stringify(response)}`));
+            return;
+          }
+          
+          resolve(response.choices[0].message.content);
+        } catch (err) {
+          reject(new Error(`Failed to parse API response: ${err.message}. Raw response: ${data}`));
+        }
+      });
+    });
+    
+    req.on('error', reject);
+    req.write(payload);
+    req.end();
+  });
+}
+
+// ============================================================================
+// TEXT-TO-SPEECH
+// ============================================================================
+
+async function speak(text, options = {}) {
+  const cleanText = text
+    .replace(/```[\s\S]*?```/g, 'code block')
+    .replace(/`[^`]+`/g, 'code')
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '')
+    .slice(0, 500);
+  
+  console.log(`🤖 JARVIS: ${text}`);
+  
+  if (options.silent) return;
+  
+  try {
+    await execAsync('which festival');
+    await execAsync(`echo "${cleanText.replace(/"/g, '\\"')}" | festival --tts 2>/dev/null`);
+    return;
+  } catch {}
+  
+  try {
+    await execAsync('which espeak-ng');
+    await execAsync(`espeak-ng -v en-us -s 175 "${cleanText.replace(/"/g, '\\"')}" 2>/dev/null`);
+  } catch {}
+}
+
+// ============================================================================
+// CONVERSATION PERSISTENCE
+// ============================================================================
+
+function saveConversation(history, filename = '/tmp/jarvis-conversation.json') {
+  fs.writeFileSync(filename, JSON.stringify(history, null, 2));
+  console.log(`💾 Conversation saved to ${filename}`);
+}
+
+function loadConversation(filename = '/tmp/jarvis-conversation.json') {
+  try {
+    const data = fs.readFileSync(filename, 'utf8');
+    return JSON.parse(data);
+  } catch {
+    return [];
+  }
+}
+
+// ============================================================================
+// EXPORTS
+// ============================================================================
+
+module.exports = {
+  checkDependencies,
+  checkAndFixAudio,
+  recordAudio,
+  transcribe,
+  getChatResponse,
+  speak,
+  saveConversation,
+  loadConversation
+};

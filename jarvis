@@ -1,0 +1,12 @@
+#!/bin/bash
+# One-command voice assistant launcher with enhanced options
+cd "$(dirname "$0")"
+
+# If --advanced flag is passed, launch advanced version
+if [ "$1" = "--advanced" ] || [ "$1" = "-a" ]; then
+    exec node advanced-jarvis.js
+elif [ "$1" = "--enhanced" ] || [ "$1" = "-e" ]; then
+    exec node enhanced-jarvis.js
+else
+    exec node jarvis.js
+fi
