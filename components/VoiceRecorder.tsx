@@ -9,6 +9,8 @@ import type { Message } from "@/app/page";
 
 interface VoiceRecorderProps {
   onNewMessage: (message: Message) => void;
+  isLoading?: boolean;
+  setIsLoading?: (loading: boolean) => void;
 }
 
 export default function VoiceRecorder({ onNewMessage }: VoiceRecorderProps) {

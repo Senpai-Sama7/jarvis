@@ -1,12 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { createGroqClient } from '../../../core/ai/groq-client';
-import { loadConfig } from '../../../core/config';
 import { sanitizePrompt } from '../../../core/security/sanitizer';
 import { logger } from '../../../core/utils/logger';
 
 const router = Router();
-const config = loadConfig();
-const client = createGroqClient(process.env.GROQ_API_KEY || '', config.ai.model);
 
 router.post('/', async (req: Request, res: Response) => {
   try {
@@ -15,6 +12,9 @@ router.post('/', async (req: Request, res: Response) => {
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
     }
+    
+    const model = process.env.AI_MODEL || process.env.GROQ_MODEL || 'llama-3.1-70b-versatile';
+    const client = createGroqClient(process.env.GROQ_API_KEY || '', model);
     
     const sanitized = sanitizePrompt(message);
     const response = await client.chat({

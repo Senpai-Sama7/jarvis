@@ -12,7 +12,7 @@ import { validateConfig } from './validator';
 const DEFAULT_CONFIG: JarvisConfig = {
   ai: {
     provider: 'groq',
-    model: 'llama-3.3-70b-versatile',
+    model: 'llama-3.1-70b-versatile',
     maxTokens: 8000,
     temperature: 0.7,
   },

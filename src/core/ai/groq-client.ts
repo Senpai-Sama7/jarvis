@@ -11,7 +11,7 @@ import { logger } from '../utils/logger';
 export class GroqClient extends BaseLLMClient {
   private client: Groq;
 
-  constructor(apiKey: string, model: string = 'llama-3.3-70b-versatile') {
+  constructor(apiKey: string, model: string = 'llama-3.1-70b-versatile') {
     super(model, apiKey);
     this.client = new Groq({ apiKey });
   }
