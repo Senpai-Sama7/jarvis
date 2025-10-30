@@ -8,8 +8,22 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Password Gate -->
+        <div class="password-gate" id="passwordGate">
+            <div class="logo">🔒</div>
+            <h2>Enter Password</h2>
+            <form id="passwordForm">
+                <input type="password" id="passwordInput" placeholder="Password" required autofocus>
+                <button type="submit">Unlock</button>
+            </form>
+            <p class="error-message" id="errorMessage"></p>
+            <p class="help-text">
+                Set your password in the JavaScript file
+            </p>
+        </div>
+
         <!-- Connection Panel -->
-        <div class="connection-panel" id="connectionPanel">
+        <div class="connection-panel hidden" id="connectionPanel">
             <div class="logo">🤖 JARVIS</div>
             <h2>Connect to Your Server</h2>
             <form id="connectionForm">
@@ -109,6 +123,7 @@
         </div>
     </div>
 
+    <script src="assets/js/app.local.js"></script>
     <script src="assets/js/app.js"></script>
 </body>
 </html>

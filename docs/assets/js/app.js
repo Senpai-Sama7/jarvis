@@ -9,7 +9,7 @@ const PASSWORD_HASH = '624caba5c176f2be5cc8860f0bf6669c4cb99fc085ff5c518eafae572
 // Pre-configured server URL
 // ============================================
 const SERVER_URL = 'http://100.82.176.27:8080';
-const API_KEY = '7579efdb3ba15342c30ad71fbfe87b10e9bf29fd832459ba5210a8dc08eeb5d3'; // Leave empty or set your API key here
+const API_KEY = ''; // API key removed for security - configure locally
 
 // State
 let serverUrl = '';

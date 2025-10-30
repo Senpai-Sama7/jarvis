@@ -12,3 +12,4 @@ build/
 .vercel
 *.tsbuildinfo
 next-env.d.ts
+docs/assets/js/app.local.js
