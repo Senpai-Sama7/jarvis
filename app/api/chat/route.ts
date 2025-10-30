@@ -12,8 +12,11 @@ interface ChatRequestBody {
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting
-    const ip = request.headers.get("x-forwarded-for") || "anonymous";
+    // Better rate limiting with multiple header checks
+    const forwarded = request.headers.get("x-forwarded-for");
+    const realIp = request.headers.get("x-real-ip");
+    const ip = forwarded?.split(',')[0].trim() || realIp || "unknown";
+    
     if (!checkRateLimit(ip, 30, 60000)) {
       return NextResponse.json(
         { error: "Rate limit exceeded. Please try again later." },

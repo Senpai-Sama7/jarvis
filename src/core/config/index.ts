@@ -78,31 +78,31 @@ function loadConfigFromEnv(): Partial<JarvisConfig> {
   
   // AI configuration
   if (process.env.AI_PROVIDER) {
-    config.ai = config.ai || {} as any;
-    config.ai.provider = process.env.AI_PROVIDER as any;
+    if (!config.ai) config.ai = {} as any;
+    config.ai!.provider = process.env.AI_PROVIDER as any;
   }
   if (process.env.AI_MODEL) {
-    config.ai = config.ai || {} as any;
-    config.ai.model = process.env.AI_MODEL;
+    if (!config.ai) config.ai = {} as any;
+    config.ai!.model = process.env.AI_MODEL;
   }
   
   // Voice configuration
   if (process.env.VOICE_ENABLED !== undefined) {
-    config.voice = config.voice || {} as any;
-    config.voice.input = config.voice.input || {} as any;
-    config.voice.input.enabled = process.env.VOICE_ENABLED === 'true';
+    if (!config.voice) config.voice = {} as any;
+    if (!config.voice!.input) config.voice!.input = {} as any;
+    config.voice!.input!.enabled = process.env.VOICE_ENABLED === 'true';
   }
   
   // Interface ports
   if (process.env.WEB_PORT) {
-    config.interfaces = config.interfaces || {} as any;
-    config.interfaces.web = config.interfaces.web || {} as any;
-    config.interfaces.web.port = parseInt(process.env.WEB_PORT, 10);
+    if (!config.interfaces) config.interfaces = {} as any;
+    if (!config.interfaces!.web) config.interfaces!.web = {} as any;
+    config.interfaces!.web!.port = parseInt(process.env.WEB_PORT, 10);
   }
   if (process.env.API_PORT) {
-    config.interfaces = config.interfaces || {} as any;
-    config.interfaces.api = config.interfaces.api || {} as any;
-    config.interfaces.api.port = parseInt(process.env.API_PORT, 10);
+    if (!config.interfaces) config.interfaces = {} as any;
+    if (!config.interfaces!.api) config.interfaces!.api = {} as any;
+    config.interfaces!.api!.port = parseInt(process.env.API_PORT, 10);
   }
   
   return config;

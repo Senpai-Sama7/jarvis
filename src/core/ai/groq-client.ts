@@ -19,7 +19,7 @@ export class GroqClient extends BaseLLMClient {
   async chat(request: ChatCompletionRequest): Promise<ChatCompletionResponse> {
     try {
       const completion = await this.client.chat.completions.create({
-        messages: request.messages.map(m => ({
+        messages: request.messages.map((m: any) => ({
           role: m.role,
           content: m.content,
         })),
@@ -52,7 +52,7 @@ export class GroqClient extends BaseLLMClient {
   async *streamChat(request: ChatCompletionRequest): AsyncGenerator<string> {
     try {
       const stream = await this.client.chat.completions.create({
-        messages: request.messages.map(m => ({
+        messages: request.messages.map((m: any) => ({
           role: m.role,
           content: m.content,
         })),
@@ -86,7 +86,7 @@ export class GroqClient extends BaseLLMClient {
         response_format: 'text',
       });
 
-      return transcription as string;
+      return String(transcription);
     } catch (error) {
       logger.error('Groq transcription error:', error);
       throw new AIError('Failed to transcribe audio with Groq', error);

@@ -3,9 +3,8 @@
  * Manages plugin lifecycle and registration
  */
 
-import { Plugin, PluginContext, Command, Route } from '../../types';
-import { logger } from '../utils/logger';
-import { ConfigurationError } from '../utils/errors';
+import { Plugin, PluginContext, Command, Route, ConfigurationError } from '../types';
+import { logger } from '../core/utils/logger';
 
 export class PluginManager {
   private plugins: Map<string, Plugin> = new Map();

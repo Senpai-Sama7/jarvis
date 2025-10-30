@@ -1,19 +1,7 @@
-/**
- * LLM Interface
- * Abstract interface for language model clients
- */
+import { LLMClient, ChatCompletionRequest, ChatCompletionResponse } from '../../types';
 
-import {
-  LLMClient,
-  ChatCompletionRequest,
-  ChatCompletionResponse,
-} from '../../types';
+export type { ChatCompletionRequest, ChatCompletionResponse };
 
-export { LLMClient, ChatCompletionRequest, ChatCompletionResponse };
-
-/**
- * Base class for LLM clients
- */
 export abstract class BaseLLMClient implements LLMClient {
   protected model: string;
   protected apiKey: string;

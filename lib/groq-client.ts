@@ -82,9 +82,19 @@ export async function getChatCompletion(
 }
 
 /**
- * Rate limiting helper
+ * Rate limiting helper with automatic cleanup
  */
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
+
+// Cleanup old entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of requestCounts.entries()) {
+    if (now > value.resetTime) {
+      requestCounts.delete(key);
+    }
+  }
+}, 5 * 60 * 1000);
 
 export function checkRateLimit(identifier: string, limit: number = 10, windowMs: number = 60000): boolean {
   const now = Date.now();

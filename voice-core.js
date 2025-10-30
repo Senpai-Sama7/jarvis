@@ -236,34 +236,31 @@ async function getChatResponse(userMessage, conversationHistory = []) {
 
 async function speak(text, options = {}) {
   const cleanText = text
-    .replace(/```[\\s\\S]*?```/g, 'code block')
+    .replace(/```[\s\S]*?```/g, 'code block')
     .replace(/`[^`]+`/g, 'code')
-    .replace(/\\*\\*/g, '')
-    .replace(/\\*/g, '')
-    .slice(0, 1000);  // Increased limit for better responses
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '')
+    .slice(0, 1000);
   
   console.log(`🤖 JARVIS: ${text}`);
   
   if (options.silent) return;
   
-  // Check for TTS preference in environment or options
   const ttsEngine = options.engine || process.env.TTS_ENGINE || 'auto';
   
-  // Try different TTS engines in order of preference
   const ttsOptions = [
-    { name: 'festival', cmd: `echo "${cleanText.replace(/"/g, '\\"')}" | festival --tts` },
-    { name: 'espeak-ng', cmd: `espeak-ng -v en-us -s 175 -p 80 "${cleanText.replace(/"/g, '\\"')}"` },
-    { name: 'espeak', cmd: `espeak -v en-us -s 175 -p 80 "${cleanText.replace(/"/g, '\\"')}"` },
-    { name: 'say', cmd: `say "${cleanText.replace(/"/g, '\\"')}"` }  // For macOS compatibility
+    { name: 'festival', args: ['--tts'], useStdin: true },
+    { name: 'espeak-ng', args: ['-v', 'en-us', '-s', '175', '-p', '80', cleanText], useStdin: false },
+    { name: 'espeak', args: ['-v', 'en-us', '-s', '175', '-p', '80', cleanText], useStdin: false },
+    { name: 'say', args: [cleanText], useStdin: false }
   ];
   
-  // If specific engine requested, try only that one
   if (ttsEngine !== 'auto') {
     const engine = ttsOptions.find(opt => opt.name === ttsEngine);
     if (engine) {
       try {
         await execAsync(`which ${engine.name}`);
-        await execAsync(`${engine.cmd} 2>/dev/null`);
+        await speakWithEngine(engine.name, engine.args, engine.useStdin, cleanText);
         return;
       } catch (err) {
         console.error(`TTS engine ${ttsEngine} not available, falling back to alternatives`);
@@ -271,16 +268,35 @@ async function speak(text, options = {}) {
     }
   }
   
-  // Otherwise try them in order
   for (const engine of ttsOptions) {
     try {
       await execAsync(`which ${engine.name}`);
-      await execAsync(`${engine.cmd} 2>/dev/null`);
+      await speakWithEngine(engine.name, engine.args, engine.useStdin, cleanText);
       return;
     } catch {}
   }
   
   console.warn('⚠️  No TTS engine available, text will only be displayed');
+}
+
+function speakWithEngine(command, args, useStdin, text) {
+  return new Promise((resolve, reject) => {
+    const proc = spawn(command, args, { 
+      stdio: useStdin ? ['pipe', 'ignore', 'ignore'] : ['ignore', 'ignore', 'ignore'] 
+    });
+    
+    if (useStdin) {
+      proc.stdin.write(text);
+      proc.stdin.end();
+    }
+    
+    proc.on('close', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`TTS exited with code ${code}`));
+    });
+    
+    proc.on('error', reject);
+  });
 }
 
 // ============================================================================
