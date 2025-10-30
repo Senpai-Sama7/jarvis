@@ -4,6 +4,13 @@
 // ============================================
 const PASSWORD_HASH = '624caba5c176f2be5cc8860f0bf6669c4cb99fc085ff5c518eafae57254c2e0f'; // Hash of your password
 
+// ============================================
+// SERVER CONFIGURATION
+// Pre-configured server URL
+// ============================================
+const SERVER_URL = 'http://100.82.176.27:8080';
+const API_KEY = ''; // Leave empty or set your API key here
+
 // State
 let serverUrl = '';
 let apiKey = '';
@@ -50,13 +57,29 @@ passwordForm.addEventListener('submit', async (e) => {
     
     if (hash === PASSWORD_HASH) {
         isAuthenticated = true;
-        passwordGate.classList.add('hidden');
-        connectionPanel.classList.remove('hidden');
+        serverUrl = SERVER_URL;
+        apiKey = API_KEY;
         
-        const expiry = Date.now() + (24 * 60 * 60 * 1000);
-        localStorage.setItem('jarvis_auth', expiry);
-        
-        errorMessage.textContent = '';
+        // Auto-connect to server
+        try {
+            const response = await fetch(`${serverUrl}/health`);
+            if (response.ok) {
+                isConnected = true;
+                passwordGate.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                
+                const expiry = Date.now() + (24 * 60 * 60 * 1000);
+                localStorage.setItem('jarvis_auth', expiry);
+                
+                addMessage('System', 'Connected to JARVIS server', 'assistant');
+            } else {
+                throw new Error('Server not responding');
+            }
+        } catch (error) {
+            errorMessage.textContent = 'Cannot connect to server';
+            passwordInput.value = '';
+            passwordInput.focus();
+        }
     } else {
         errorMessage.textContent = 'Incorrect password';
         passwordInput.value = '';
@@ -68,8 +91,22 @@ passwordForm.addEventListener('submit', async (e) => {
 const authExpiry = localStorage.getItem('jarvis_auth');
 if (authExpiry && Date.now() < parseInt(authExpiry)) {
     isAuthenticated = true;
-    passwordGate.classList.add('hidden');
-    connectionPanel.classList.remove('hidden');
+    serverUrl = SERVER_URL;
+    apiKey = API_KEY;
+    
+    // Auto-connect
+    fetch(`${serverUrl}/health`)
+        .then(response => {
+            if (response.ok) {
+                isConnected = true;
+                passwordGate.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                addMessage('System', 'Reconnected to JARVIS server', 'assistant');
+            }
+        })
+        .catch(() => {
+            localStorage.removeItem('jarvis_auth');
+        });
 }
 
 // Load saved connection
