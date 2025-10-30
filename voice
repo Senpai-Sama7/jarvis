@@ -1,4 +1,0 @@
-#!/bin/bash
-# Voice input to Claude
-cd "$(dirname "$0")"
-exec node voice-to-claude.js
