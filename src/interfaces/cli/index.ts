@@ -88,6 +88,36 @@ program
     }
   });
 
+// Code execution command
+program
+  .command('execute')
+  .description('Execute a shell command')
+  .argument('<command>', 'Command to execute')
+  .option('--cwd <dir>', 'Working directory')
+  .option('--timeout <ms>', 'Timeout in milliseconds', '10000')
+  .action(async (command, options) => {
+    try {
+      await commands.executeCommand(command, options);
+    } catch (error) {
+      handleError(error, logger);
+    }
+  });
+
+// AI-assisted execution
+program
+  .command('ai-execute')
+  .description('Use AI to generate and execute code/commands')
+  .argument('<prompt>', 'What you want to do')
+  .option('--dry-run', 'Show code without executing')
+  .option('--cwd <dir>', 'Working directory')
+  .action(async (prompt, options) => {
+    try {
+      await commands.aiExecute(prompt, options);
+    } catch (error) {
+      handleError(error, logger);
+    }
+  });
+
 // Config command
 program
   .command('config')

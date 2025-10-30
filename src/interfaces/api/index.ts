@@ -11,6 +11,7 @@ import { handleError } from '../../core/utils/errors';
 import { chatRouter } from './routes/chat';
 import { codeRouter } from './routes/code';
 import { configRouter } from './routes/config';
+import { executeRouter } from './routes/execute';
 import { authMiddleware } from './middleware/auth';
 import { sanitizationMiddleware } from './middleware/sanitization';
 
@@ -72,6 +73,7 @@ app.get('/health', (req, res) => {
 app.use('/api/chat', chatRouter);
 app.use('/api/code', codeRouter);
 app.use('/api/config', configRouter);
+app.use('/api/execute', executeRouter);
 
 // Root endpoint
 app.get('/', (req, res) => {
