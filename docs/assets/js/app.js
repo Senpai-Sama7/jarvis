@@ -1,9 +1,20 @@
+// ============================================
+// PASSWORD CONFIGURATION (SHA-256 Hash)
+// Password is hashed - cannot be reversed
+// ============================================
+const PASSWORD_HASH = '624caba5c176f2be5cc8860f0bf6669c4cb99fc085ff5c518eafae57254c2e0f'; // Hash of your password
+
 // State
 let serverUrl = '';
 let apiKey = '';
 let isConnected = false;
+let isAuthenticated = false;
 
 // Elements
+const passwordGate = document.getElementById('passwordGate');
+const passwordForm = document.getElementById('passwordForm');
+const passwordInput = document.getElementById('passwordInput');
+const errorMessage = document.getElementById('errorMessage');
 const connectionPanel = document.getElementById('connectionPanel');
 const mainApp = document.getElementById('mainApp');
 const connectionForm = document.getElementById('connectionForm');
@@ -21,36 +32,63 @@ const terminalOutput = document.getElementById('terminalOutput');
 const terminalInput = document.getElementById('terminalInput');
 const disconnectBtn = document.getElementById('disconnectBtn');
 
+// Hash function
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Password Authentication
+passwordForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const password = passwordInput.value;
+    const hash = await hashPassword(password);
+    
+    if (hash === PASSWORD_HASH) {
+        isAuthenticated = true;
+        passwordGate.classList.add('hidden');
+        connectionPanel.classList.remove('hidden');
+        
+        const expiry = Date.now() + (24 * 60 * 60 * 1000);
+        localStorage.setItem('jarvis_auth', expiry);
+        
+        errorMessage.textContent = '';
+    } else {
+        errorMessage.textContent = 'Incorrect password';
+        passwordInput.value = '';
+        passwordInput.focus();
+    }
+});
+
+// Check authentication on load
+const authExpiry = localStorage.getItem('jarvis_auth');
+if (authExpiry && Date.now() < parseInt(authExpiry)) {
+    isAuthenticated = true;
+    passwordGate.classList.add('hidden');
+    connectionPanel.classList.remove('hidden');
+}
+
+// Load saved connection
+const savedServer = localStorage.getItem('jarvis_server');
+const savedKey = localStorage.getItem('jarvis_key');
+if (savedServer) document.getElementById('serverUrl').value = savedServer;
+if (savedKey) document.getElementById('apiKey').value = savedKey;
+
 // API Helper
 async function apiCall(endpoint, method = 'GET', body = null) {
-    const headers = {
-        'Content-Type': 'application/json'
-    };
+    const headers = { 'Content-Type': 'application/json' };
+    if (apiKey) headers['Authorization'] = `Bearer ${apiKey}`;
     
-    if (apiKey) {
-        headers['Authorization'] = `Bearer ${apiKey}`;
-    }
+    const options = { method, headers, mode: 'cors' };
+    if (body) options.body = JSON.stringify(body);
     
-    const options = {
-        method,
-        headers,
-        mode: 'cors'
-    };
-    
-    if (body) {
-        options.body = JSON.stringify(body);
-    }
-    
-    try {
-        const response = await fetch(`${serverUrl}${endpoint}`, options);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        return await response.json();
-    } catch (error) {
-        console.error('API Error:', error);
-        throw error;
-    }
+    const response = await fetch(`${serverUrl}${endpoint}`, options);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return await response.json();
 }
 
 // Connection
@@ -59,14 +97,9 @@ connectionForm.addEventListener('submit', async (e) => {
     
     serverUrl = document.getElementById('serverUrl').value.trim();
     apiKey = document.getElementById('apiKey').value.trim();
-    
-    // Remove trailing slash
-    if (serverUrl.endsWith('/')) {
-        serverUrl = serverUrl.slice(0, -1);
-    }
+    if (serverUrl.endsWith('/')) serverUrl = serverUrl.slice(0, -1);
     
     try {
-        // Test connection
         const response = await apiCall('/health');
         
         if (response.status === 'ok') {
@@ -74,11 +107,8 @@ connectionForm.addEventListener('submit', async (e) => {
             connectionPanel.classList.add('hidden');
             mainApp.classList.remove('hidden');
             
-            // Save to localStorage
             localStorage.setItem('jarvis_server', serverUrl);
-            if (apiKey) {
-                localStorage.setItem('jarvis_key', apiKey);
-            }
+            if (apiKey) localStorage.setItem('jarvis_key', apiKey);
             
             addMessage('System', 'Connected to JARVIS server', 'assistant');
         }
@@ -87,20 +117,6 @@ connectionForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Load saved connection
-window.addEventListener('load', () => {
-    const saved = localStorage.getItem('jarvis_server');
-    const savedKey = localStorage.getItem('jarvis_key');
-    
-    if (saved) {
-        document.getElementById('serverUrl').value = saved;
-    }
-    if (savedKey) {
-        document.getElementById('apiKey').value = savedKey;
-    }
-});
-
-// Disconnect
 disconnectBtn.addEventListener('click', () => {
     isConnected = false;
     mainApp.classList.add('hidden');
@@ -111,12 +127,8 @@ disconnectBtn.addEventListener('click', () => {
 document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         const view = btn.dataset.view;
-        
-        // Update active nav
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        
-        // Update active view
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById(`${view}View`).classList.add('active');
     });
@@ -147,9 +159,7 @@ sendBtn.addEventListener('click', async () => {
 });
 
 chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        sendBtn.click();
-    }
+    if (e.key === 'Enter') sendBtn.click();
 });
 
 // Voice Input
@@ -159,17 +169,13 @@ voiceBtn.addEventListener('click', () => {
         const recognition = new SpeechRecognition();
         
         recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            chatInput.value = transcript;
+            chatInput.value = event.results[0][0].transcript;
             sendBtn.click();
         };
         
         recognition.start();
         voiceBtn.textContent = '🎙️';
-        
-        recognition.onend = () => {
-            voiceBtn.textContent = '🎤';
-        };
+        recognition.onend = () => { voiceBtn.textContent = '🎤'; };
     } else {
         alert('Speech recognition not supported in this browser');
     }
@@ -179,22 +185,16 @@ voiceBtn.addEventListener('click', () => {
 executeBtn.addEventListener('click', async () => {
     const code = codeInput.value.trim();
     const language = languageSelect.value;
-    
     if (!code) return;
     
     executeOutput.textContent = 'Executing...';
     
     try {
-        const response = await apiCall('/api/execute/code', 'POST', {
-            code,
-            language
-        });
+        const response = await apiCall('/api/execute/code', 'POST', { code, language });
         
         if (response.success) {
             executeOutput.textContent = response.stdout || 'Executed successfully';
-            if (response.stderr) {
-                executeOutput.textContent += '\n\nWarnings:\n' + response.stderr;
-            }
+            if (response.stderr) executeOutput.textContent += '\n\nWarnings:\n' + response.stderr;
         } else {
             executeOutput.textContent = 'Error:\n' + response.error;
         }
@@ -215,10 +215,6 @@ async function loadFiles(path = '.') {
                 const item = document.createElement('div');
                 item.className = 'file-item';
                 item.textContent = file;
-                item.addEventListener('click', () => {
-                    // Could implement file reading here
-                    console.log('Clicked:', file);
-                });
                 fileList.appendChild(item);
             });
         }
@@ -251,9 +247,7 @@ terminalInput.addEventListener('keypress', async (e) => {
             
             if (response.success) {
                 addTerminalLine(response.stdout || '');
-                if (response.stderr) {
-                    addTerminalLine(response.stderr);
-                }
+                if (response.stderr) addTerminalLine(response.stderr);
             } else {
                 addTerminalLine(`Error: ${response.error}`);
             }
@@ -263,5 +257,4 @@ terminalInput.addEventListener('keypress', async (e) => {
     }
 });
 
-// Initialize
 console.log('JARVIS Remote Control loaded');
