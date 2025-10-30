@@ -5,7 +5,7 @@ import VoiceRecorder from "@/components/VoiceRecorder";
 import ConversationHistory from "@/components/ConversationHistory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Github, Download, Keyboard } from "lucide-react";
+import { Moon, Sun, Github, Download, Keyboard, Trash2, Zap, Activity } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 
@@ -18,34 +18,38 @@ export interface Message {
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [stats, setStats] = useState({ total: 0, today: 0 });
   const { theme, setTheme } = useTheme();
 
-  // Load messages from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem("conversation-history");
     if (saved) {
       try {
-        setMessages(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setMessages(parsed);
+        updateStats(parsed);
       } catch (e) {
         console.error("Failed to load history:", e);
       }
     }
   }, []);
 
-  // Keyboard shortcuts
+  const updateStats = useCallback((msgs: Message[]) => {
+    const today = new Date().setHours(0, 0, 0, 0);
+    const todayCount = msgs.filter(m => m.timestamp >= today).length;
+    setStats({ total: msgs.length, today: todayCount });
+  }, []);
+
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
-      // Ctrl/Cmd + K to clear
       if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
         clearHistory();
       }
-      // Ctrl/Cmd + E to export
       if ((e.ctrlKey || e.metaKey) && e.key === "e") {
         e.preventDefault();
         exportConversation();
       }
-      // Ctrl/Cmd + D to toggle theme
       if ((e.ctrlKey || e.metaKey) && e.key === "d") {
         e.preventDefault();
         setTheme(theme === "dark" ? "light" : "dark");
