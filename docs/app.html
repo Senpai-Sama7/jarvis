@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JARVIS Remote Control</title>
+    <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Connection Panel -->
+        <div class="connection-panel" id="connectionPanel">
+            <div class="logo">🤖 JARVIS</div>
+            <h2>Connect to Your Server</h2>
+            <form id="connectionForm">
+                <input type="text" id="serverUrl" placeholder="http://your-server:8080" required>
+                <input type="password" id="apiKey" placeholder="API Key (optional)">
+                <button type="submit">Connect</button>
+            </form>
+            <p class="help-text">
+                Need help? <a href="#setup">Setup Guide</a>
+            </p>
+        </div>
+
+        <!-- Main App -->
+        <div class="main-app hidden" id="mainApp">
+            <!-- Header -->
+            <header class="app-header">
+                <div class="header-left">
+                    <span class="logo">🤖</span>
+                    <span class="brand">JARVIS Remote</span>
+                    <span class="status" id="status">Connected</span>
+                </div>
+                <div class="header-right">
+                    <button class="btn-icon" id="settingsBtn" title="Settings">⚙️</button>
+                    <button class="btn-icon" id="disconnectBtn" title="Disconnect">🔌</button>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <div class="app-content">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <nav>
+                        <button class="nav-btn active" data-view="chat">💬 Chat</button>
+                        <button class="nav-btn" data-view="execute">⚡ Execute</button>
+                        <button class="nav-btn" data-view="files">📁 Files</button>
+                        <button class="nav-btn" data-view="terminal">💻 Terminal</button>
+                    </nav>
+                </aside>
+
+                <!-- Views -->
+                <main class="main-content">
+                    <!-- Chat View -->
+                    <div class="view active" id="chatView">
+                        <div class="chat-container">
+                            <div class="messages" id="messages"></div>
+                            <div class="input-area">
+                                <button class="btn-icon" id="voiceBtn" title="Voice Input">🎤</button>
+                                <input type="text" id="chatInput" placeholder="Ask JARVIS anything...">
+                                <button class="btn-primary" id="sendBtn">Send</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Execute View -->
+                    <div class="view" id="executeView">
+                        <h2>Execute Code</h2>
+                        <div class="execute-container">
+                            <textarea id="codeInput" placeholder="Enter code or command..."></textarea>
+                            <div class="execute-controls">
+                                <select id="languageSelect">
+                                    <option value="bash">Bash</option>
+                                    <option value="javascript">JavaScript</option>
+                                    <option value="python">Python</option>
+                                    <option value="typescript">TypeScript</option>
+                                </select>
+                                <button class="btn-primary" id="executeBtn">Execute</button>
+                            </div>
+                            <div class="output" id="executeOutput"></div>
+                        </div>
+                    </div>
+
+                    <!-- Files View -->
+                    <div class="view" id="filesView">
+                        <h2>File Browser</h2>
+                        <div class="files-container">
+                            <div class="path-bar">
+                                <input type="text" id="currentPath" value="." readonly>
+                                <button class="btn-primary" id="refreshFiles">Refresh</button>
+                            </div>
+                            <div class="file-list" id="fileList"></div>
+                        </div>
+                    </div>
+
+                    <!-- Terminal View -->
+                    <div class="view" id="terminalView">
+                        <h2>Terminal</h2>
+                        <div class="terminal-container">
+                            <div class="terminal-output" id="terminalOutput"></div>
+                            <div class="terminal-input-area">
+                                <span class="prompt">$</span>
+                                <input type="text" id="terminalInput" placeholder="Enter command...">
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
