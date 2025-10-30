@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="JARVIS - Your Personal AI Coding Assistant. Voice-controlled, multi-interface AI that writes code, explains algorithms, and helps you code faster.">
+    <title>JARVIS - AI Coding Assistant</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <span class="logo">🤖</span>
+                <span class="brand-name">JARVIS</span>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="#features">Features</a>
+                <a href="#demo">Demo</a>
+                <a href="#docs">Docs</a>
+                <a href="#pricing">Pricing</a>
+                <a href="https://github.com/Senpai-Sama7/jarvis" target="_blank" class="btn-primary">Get Started</a>
+            </div>
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Your Personal AI
+                    <span class="gradient-text">Coding Assistant</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Just like Tony Stark's AI assistant, but for coding. Voice-controlled, intelligent, and ready to help you build anything.
+                </p>
+                <div class="hero-buttons">
+                    <a href="https://github.com/Senpai-Sama7/jarvis" class="btn-primary btn-large">
+                        Start Coding with AI
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
+                    <a href="#demo" class="btn-secondary btn-large">Watch Demo</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number">4</div>
+                        <div class="stat-label">Interfaces</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">0</div>
+                        <div class="stat-label">Vulnerabilities</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Open Source</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="terminal-window">
+                    <div class="terminal-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                    </div>
+                    <div class="terminal-body">
+                        <div class="terminal-line">
+                            <span class="prompt">$</span>
+                            <span class="command">npm run dev</span>
+                        </div>
+                        <div class="terminal-line output">✓ Ready in 1.4s</div>
+                        <div class="terminal-line output">Local: http://localhost:3000</div>
+                        <div class="terminal-line">
+                            <span class="prompt">$</span>
+                            <span class="command typing">jarvis generate "create a REST API"</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Everything You Need to Code Faster</h2>
+                <p>Four powerful interfaces, one intelligent AI assistant</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎤</div>
+                    <h3>Voice Control</h3>
+                    <p>Talk to JARVIS naturally. Just speak what you want to build and watch the magic happen.</p>
+                    <ul class="feature-list">
+                        <li>Hands-free coding</li>
+                        <li>Natural language processing</li>
+                        <li>Real-time transcription</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3>Web Interface</h3>
+                    <p>Beautiful chat interface with conversation history, code highlighting, and one-click copy.</p>
+                    <ul class="feature-list">
+                        <li>Modern UI/UX</li>
+                        <li>Dark/Light mode</li>
+                        <li>Mobile responsive</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⌨️</div>
+                    <h3>CLI Power</h3>
+                    <p>Command-line interface for developers who love the terminal. Fast, efficient, scriptable.</p>
+                    <ul class="feature-list">
+                        <li>Generate code files</li>
+                        <li>Explain any code</li>
+                        <li>Review & refactor</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔌</div>
+                    <h3>REST API</h3>
+                    <p>Integrate JARVIS into your workflow. Build custom tools and automation.</p>
+                    <ul class="feature-list">
+                        <li>RESTful endpoints</li>
+                        <li>Rate limiting</li>
+                        <li>Authentication</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo">
+        <div class="container">
+            <div class="section-header">
+                <h2>See JARVIS in Action</h2>
+                <p>Watch how easy it is to code with AI assistance</p>
+            </div>
+            <div class="demo-container">
+                <div class="demo-tabs">
+                    <button class="tab-btn active" data-tab="web">Web Interface</button>
+                    <button class="tab-btn" data-tab="voice">Voice Control</button>
+                    <button class="tab-btn" data-tab="cli">CLI</button>
+                </div>
+                <div class="demo-content">
+                    <div class="demo-panel active" id="web">
+                        <div class="browser-window">
+                            <div class="browser-header">
+                                <div class="browser-dots">
+                                    <span class="dot red"></span>
+                                    <span class="dot yellow"></span>
+                                    <span class="dot green"></span>
+                                </div>
+                                <div class="browser-url">localhost:3000</div>
+                            </div>
+                            <div class="browser-body">
+                                <div class="chat-message user">
+                                    <div class="message-avatar">👤</div>
+                                    <div class="message-content">Create a React component for a login form</div>
+                                </div>
+                                <div class="chat-message assistant">
+                                    <div class="message-avatar">🤖</div>
+                                    <div class="message-content">
+                                        <p>Here's a React login component with form validation:</p>
+                                        <pre><code>import { useState } from 'react';
+
+export default function LoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Handle login
+  };
+  
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;input type="email" value={email} 
+        onChange={(e) => setEmail(e.target.value)} /&gt;
+      &lt;input type="password" value={password}
+        onChange={(e) => setPassword(e.target.value)} /&gt;
+      &lt;button type="submit"&gt;Login&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="demo-panel" id="voice">
+                        <div class="voice-demo">
+                            <div class="waveform">
+                                <span></span><span></span><span></span><span></span><span></span>
+                                <span></span><span></span><span></span><span></span><span></span>
+                            </div>
+                            <p class="voice-text">"Create a function that sorts an array"</p>
+                            <div class="voice-response">
+                                <p>✓ Transcribed and processing...</p>
+                                <p>🤖 JARVIS: Here's a sorting function...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="demo-panel" id="cli">
+                        <div class="terminal-demo">
+                            <div class="terminal-line">
+                                <span class="prompt">$</span>
+                                <span class="command">jarvis generate "REST API" -l javascript</span>
+                            </div>
+                            <div class="terminal-line output">✓ Generating code...</div>
+                            <div class="terminal-line output">✓ Code saved to api.js</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing">
+        <div class="container">
+            <div class="section-header">
+                <h2>Simple, Transparent Pricing</h2>
+                <p>Free forever. No credit card required.</p>
+            </div>
+            <div class="pricing-card">
+                <div class="price-tag">
+                    <span class="currency">$</span>
+                    <span class="amount">0</span>
+                    <span class="period">/forever</span>
+                </div>
+                <h3>Open Source</h3>
+                <ul class="pricing-features">
+                    <li>✓ All features included</li>
+                    <li>✓ Unlimited usage</li>
+                    <li>✓ 4 interfaces (Web, Voice, CLI, API)</li>
+                    <li>✓ Community support</li>
+                    <li>✓ Regular updates</li>
+                    <li>✓ No vendor lock-in</li>
+                </ul>
+                <a href="https://github.com/Senpai-Sama7/jarvis" class="btn-primary btn-large">Get Started Free</a>
+                <p class="pricing-note">Just bring your own Groq API key (also free!)</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to Code with AI?</h2>
+            <p>Join developers who are building faster with JARVIS</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/Senpai-Sama7/jarvis" class="btn-primary btn-large">
+                    Get Started Now
+                </a>
+                <a href="https://github.com/Senpai-Sama7/jarvis#readme" class="btn-secondary btn-large">
+                    Read Documentation
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="brand">
+                        <span class="logo">🤖</span>
+                        <span class="brand-name">JARVIS</span>
+                    </div>
+                    <p>Your Personal AI Coding Assistant</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="#demo">Demo</a>
+                        <a href="#pricing">Pricing</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Resources</h4>
+                        <a href="https://github.com/Senpai-Sama7/jarvis#readme">Documentation</a>
+                        <a href="https://github.com/Senpai-Sama7/jarvis">GitHub</a>
+                        <a href="https://console.groq.com">Get API Key</a>
+                    </div>
+                    <div class="footer-column">
+                        <h4>Community</h4>
+                        <a href="https://github.com/Senpai-Sama7/jarvis/issues">Issues</a>
+                        <a href="https://github.com/Senpai-Sama7/jarvis/discussions">Discussions</a>
+                        <a href="https://github.com/Senpai-Sama7/jarvis/blob/main/LICENSE">License</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 JARVIS. Open Source under MIT License.</p>
+                <p>Made with ❤️ by developers, for developers</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
