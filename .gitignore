@@ -2,7 +2,13 @@ node_modules/
 .next/
 .env
 .env.local
+.env.production
 *.log
 /tmp/
 *.wav
 .DS_Store
+dist/
+build/
+.vercel
+*.tsbuildinfo
+next-env.d.ts
