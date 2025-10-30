@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import VoiceRecorder from "@/components/VoiceRecorder";
 import ConversationHistory from "@/components/ConversationHistory";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun, Github } from "lucide-react";
+import { Moon, Sun, Github, Download, Keyboard } from "lucide-react";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
 
 export interface Message {
   role: "user" | "assistant";
@@ -16,23 +17,84 @@ export interface Message {
 
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { theme, setTheme } = useTheme();
 
-  const handleNewMessage = (message: Message) => {
-    setMessages((prev) => [...prev, message]);
-    
-    // Save to localStorage
-    if (typeof window !== "undefined") {
-      const history = [...messages, message];
-      localStorage.setItem("conversation-history", JSON.stringify(history));
+  // Load messages from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("conversation-history");
+    if (saved) {
+      try {
+        setMessages(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to load history:", e);
+      }
     }
-  };
+  }, []);
 
-  const clearHistory = () => {
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + K to clear
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        clearHistory();
+      }
+      // Ctrl/Cmd + E to export
+      if ((e.ctrlKey || e.metaKey) && e.key === "e") {
+        e.preventDefault();
+        exportConversation();
+      }
+      // Ctrl/Cmd + D to toggle theme
+      if ((e.ctrlKey || e.metaKey) && e.key === "d") {
+        e.preventDefault();
+        setTheme(theme === "dark" ? "light" : "dark");
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [messages, theme, setTheme]);
+
+  const handleNewMessage = useCallback((message: Message) => {
+    setMessages((prev) => {
+      const updated = [...prev, message];
+      localStorage.setItem("conversation-history", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const clearHistory = useCallback(() => {
     setMessages([]);
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("conversation-history");
+    localStorage.removeItem("conversation-history");
+    toast.success("Conversation cleared");
+  }, []);
+
+  const exportConversation = useCallback(() => {
+    if (messages.length === 0) {
+      toast.error("No messages to export");
+      return;
     }
+
+    const content = messages
+      .map((m) => `[${new Date(m.timestamp).toLocaleString()}] ${m.role.toUpperCase()}: ${m.content}`)
+      .join("\n\n");
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `jarvis-conversation-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Conversation exported");
+  }, [messages]);
+
+  const showShortcuts = () => {
+    toast.info(
+      "Keyboard Shortcuts:\n⌘/Ctrl + K: Clear\n⌘/Ctrl + E: Export\n⌘/Ctrl + D: Toggle Theme",
+      { duration: 5000 }
+    );
   };
 
   return (
@@ -52,7 +114,25 @@ export default function Home() {
             <Button
               variant="outline"
               size="icon"
+              onClick={showShortcuts}
+              title="Keyboard Shortcuts"
+            >
+              <Keyboard className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={exportConversation}
+              disabled={messages.length === 0}
+              title="Export Conversation (⌘E)"
+            >
+              <Download className="h-5 w-5" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              title="Toggle Theme (⌘D)"
             >
               {theme === "dark" ? (
                 <Sun className="h-5 w-5" />
@@ -69,6 +149,7 @@ export default function Home() {
                 href="https://github.com/Senpai-Sama7/jarvis"
                 target="_blank"
                 rel="noopener noreferrer"
+                title="View on GitHub"
               >
                 <Github className="h-5 w-5" />
               </a>
@@ -78,34 +159,49 @@ export default function Home() {
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Voice Recorder - Takes 2 columns on large screens */}
+          {/* Voice Recorder */}
           <div className="lg:col-span-2">
             <Card className="h-full">
               <CardHeader>
                 <CardTitle>Voice Interface</CardTitle>
               </CardHeader>
               <CardContent>
-                <VoiceRecorder onNewMessage={handleNewMessage} />
+                <VoiceRecorder 
+                  onNewMessage={handleNewMessage}
+                  isLoading={isLoading}
+                  setIsLoading={setIsLoading}
+                />
               </CardContent>
             </Card>
           </div>
 
-          {/* Conversation History - Takes 1 column */}
+          {/* Conversation History */}
           <div className="lg:col-span-1">
             <Card className="h-full">
               <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Conversation</CardTitle>
+                <CardTitle>
+                  Conversation
+                  {messages.length > 0 && (
+                    <span className="ml-2 text-sm font-normal text-muted-foreground">
+                      ({messages.length})
+                    </span>
+                  )}
+                </CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={clearHistory}
                   disabled={messages.length === 0}
+                  title="Clear History (⌘K)"
                 >
                   Clear
                 </Button>
               </CardHeader>
               <CardContent>
-                <ConversationHistory messages={messages} />
+                <ConversationHistory 
+                  messages={messages}
+                  isLoading={isLoading}
+                />
               </CardContent>
             </Card>
           </div>
