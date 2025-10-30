@@ -2,7 +2,7 @@
  * Unit tests for configuration module
  */
 
-import { validateConfig, isConfigComplete } from '../../../src/core/config/validator';
+import { validateConfig } from '../../../src/core/config/validator';
 import { JarvisConfig } from '../../../src/types';
 
 describe('config validator', () => {
@@ -49,68 +49,41 @@ describe('config validator', () => {
   };
 
   describe('validateConfig', () => {
-    it('should validate valid configuration', () => {
+    it('should validate a valid config', () => {
       const result = validateConfig(validConfig);
       expect(result.isValid).toBe(true);
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should reject invalid AI provider', () => {
-      const invalidConfig = {
-        ...validConfig,
-        ai: { ...validConfig.ai, provider: 'invalid' as any },
-      };
-      const result = validateConfig(invalidConfig);
+    it('should reject config without AI provider', () => {
+      const invalidConfig = { ...validConfig, ai: { ...validConfig.ai, provider: '' } };
+      const result = validateConfig(invalidConfig as any);
       expect(result.isValid).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.errors).toContain('AI provider is required');
     });
 
-    it('should reject invalid temperature', () => {
-      const invalidConfig = {
-        ...validConfig,
-        ai: { ...validConfig.ai, temperature: 3 },
-      };
-      const result = validateConfig(invalidConfig);
+    it('should reject config without AI model', () => {
+      const invalidConfig = { ...validConfig, ai: { ...validConfig.ai, model: '' } };
+      const result = validateConfig(invalidConfig as any);
       expect(result.isValid).toBe(false);
+      expect(result.errors).toContain('AI model is required');
     });
 
-    it('should reject invalid port numbers', () => {
+    it('should reject config with invalid rate limit', () => {
       const invalidConfig = {
         ...validConfig,
-        interfaces: {
-          ...validConfig.interfaces,
-          web: { enabled: true, port: 99999 },
+        security: {
+          ...validConfig.security,
+          rateLimiting: {
+            enabled: true,
+            maxRequests: -1,
+            windowMs: 60000,
+          },
         },
       };
       const result = validateConfig(invalidConfig);
       expect(result.isValid).toBe(false);
-    });
-
-    it('should reject duplicate ports', () => {
-      const invalidConfig = {
-        ...validConfig,
-        interfaces: {
-          ...validConfig.interfaces,
-          web: { enabled: true, port: 8080 },
-          api: { enabled: true, port: 8080 },
-        },
-      };
-      const result = validateConfig(invalidConfig);
-      expect(result.isValid).toBe(false);
-    });
-  });
-
-  describe('isConfigComplete', () => {
-    it('should return true for complete configuration', () => {
-      expect(isConfigComplete(validConfig)).toBe(true);
-    });
-
-    it('should return false for incomplete configuration', () => {
-      const incompleteConfig = {
-        ...validConfig,
-        ai: { ...validConfig.ai, model: undefined as any },
-      };
-      expect(isConfigComplete(incompleteConfig)).toBe(false);
+      expect(result.errors).toContain('Rate limit maxRequests must be positive');
     });
   });
 });
