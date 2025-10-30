@@ -1,0 +1,53 @@
+{
+  "ai": {
+    "provider": "groq",
+    "model": "llama-3.3-70b-versatile",
+    "maxTokens": 8000,
+    "temperature": 0.7
+  },
+  "voice": {
+    "input": {
+      "enabled": true,
+      "model": "whisper-large-v3",
+      "silenceDuration": 2,
+      "silenceThreshold": "5%"
+    },
+    "output": {
+      "enabled": true,
+      "engine": "festival"
+    }
+  },
+  "security": {
+    "authentication": {
+      "enabled": false,
+      "method": "apikey"
+    },
+    "rateLimiting": {
+      "enabled": true,
+      "maxRequests": 100,
+      "windowMs": 60000
+    },
+    "inputSanitization": {
+      "enabled": true
+    }
+  },
+  "interfaces": {
+    "cli": {
+      "enabled": true
+    },
+    "tui": {
+      "enabled": true
+    },
+    "gui": {
+      "enabled": true
+    },
+    "web": {
+      "enabled": true,
+      "port": 3000
+    },
+    "api": {
+      "enabled": true,
+      "port": 8080
+    }
+  }
+}
